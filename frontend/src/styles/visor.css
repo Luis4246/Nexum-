@@ -1,0 +1,68 @@
+/* C-12 · Visor y editor PDF (página 03 · C07). */
+.nx-visor { min-height: 100vh; background: var(--nx-surface-sunken); }
+.nx-visor__head {
+  position: sticky; top: 0; z-index: 30; display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  height: 56px; padding: 0 16px; background: var(--nx-surface-raised); box-shadow: inset 0 -1px 0 var(--nx-border-subtle);
+}
+.nx-visor__left, .nx-visor__right { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.nx-visor__right { gap: 16px; }
+.nx-visor__divider { width: 1px; height: 24px; background: var(--nx-border-subtle); flex: none; }
+.nx-visor__title { display: flex; flex-direction: column; min-width: 0; }
+.nx-visor__title strong { font: 600 13px/16px var(--nx-font-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nx-save { display: inline-flex; align-items: center; gap: 6px; font: 400 12px/16px var(--nx-font-text); white-space: nowrap; }
+.nx-save--guardado { color: var(--nx-status-success); }
+.nx-save--pendiente { color: var(--nx-status-warning); }
+.nx-save--pendiente::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.nx-save--guardando { color: var(--nx-text-secondary); }
+.nx-save--error { color: var(--nx-status-error); }
+
+.nx-visor__stage { position: relative; display: flex; flex-direction: column; align-items: center; padding: 16px 24px 96px; }
+.nx-floating { position: sticky; top: 72px; z-index: 20; height: 52px; display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; }
+.nx-floating > * { pointer-events: auto; }
+.nx-toolbar, .nx-tool-options, .nx-page-controls, .nx-readonly {
+  display: flex; align-items: center; border-radius: var(--nx-radius-md); background: var(--nx-surface-raised);
+  box-shadow: inset 0 0 0 1px var(--nx-border-subtle), var(--nx-elevation-overlay);
+}
+.nx-toolbar { gap: 2px; padding: 6px; }
+.nx-toolbar__divider { width: 1px; height: 24px; margin: 0 4px; background: var(--nx-border-subtle); }
+.nx-tool-options { gap: 8px; padding: 6px 12px; }
+.nx-swatch { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 50%; background: none; cursor: pointer; }
+.nx-swatch i { width: 20px; height: 20px; border-radius: 50%; }
+.nx-swatch[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--nx-border-focus); }
+.nx-thickness { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 6px; background: none; cursor: pointer; }
+.nx-thickness i { border-radius: 50%; background: var(--nx-text-primary); }
+.nx-thickness[aria-pressed="true"] { background: color-mix(in srgb, var(--nx-brand-lavender) 45%, transparent); }
+.nx-readonly { gap: 8px; padding: 10px 16px; border-radius: var(--nx-radius-full); background: var(--nx-surface-inverse); color: var(--nx-text-on-inverse); font: 500 13px/16px var(--nx-font-text); box-shadow: var(--nx-elevation-overlay); }
+
+.nx-page-wrap { margin-top: 24px; max-width: 100%; overflow-x: auto; }
+.nx-hoja { position: relative; background: var(--nx-surface-raised); box-shadow: var(--nx-elevation-overlay); overflow: hidden; --scale-round-x: 1px; --scale-round-y: 1px; }
+.nx-hoja canvas { display: block; width: 100%; height: 100%; }
+.nx-hoja .textLayer { z-index: 2; }
+.nx-hoja--sin-texto .textLayer { pointer-events: none; }
+.nx-capa { position: absolute; inset: 0; z-index: 3; pointer-events: none; mix-blend-mode: multiply; }
+.nx-capa [data-borrable] { pointer-events: none; }
+.nx-hoja--borrador .nx-capa [data-borrable] { pointer-events: visiblePainted; cursor: pointer; }
+.nx-hoja--borrador .nx-capa [data-borrable]:hover { opacity: .5; }
+.nx-nota { position: absolute; z-index: 4; font-family: var(--nx-font-text); font-weight: 500; white-space: pre-wrap; line-height: 1.35; pointer-events: none; }
+.nx-hoja--borrador .nx-nota { pointer-events: auto; cursor: pointer; }
+.nx-hoja--borrador .nx-nota:hover { opacity: .5; }
+.nx-captura { position: absolute; inset: 0; z-index: 5; touch-action: none; }
+.nx-captura--dibujo { cursor: crosshair; }
+.nx-captura--texto { cursor: text; }
+.nx-entrada-texto { position: absolute; z-index: 6; min-width: 160px; padding: 2px 4px; border: 0; border-radius: 4px; outline: 2px solid var(--nx-border-focus);
+  background: var(--nx-surface-raised); font-family: var(--nx-font-text); font-weight: 500; }
+.nx-agua { position: absolute; z-index: 4; top: 48%; left: 8%; width: 84%; transform: rotate(-30deg); text-align: center; pointer-events: none; user-select: none;
+  font-family: var(--nx-font-text); font-weight: 700; line-height: 1; white-space: nowrap; color: color-mix(in srgb, var(--nx-text-primary) 16%, transparent); }
+.nx-page-controls { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 20; gap: 4px; padding: 4px 8px; }
+.nx-page-controls__divider { width: 1px; height: 20px; margin: 0 4px; background: var(--nx-border-subtle); }
+.nx-page-controls output { min-width: 56px; text-align: center; font: 500 13px/16px var(--nx-font-text); }
+.nx-visor__alert { width: 680px; max-width: 100%; margin-top: 16px; }
+@media (max-width: 760px) {
+  .nx-visor__head { padding: 0 8px; gap: 8px; }
+  .nx-visor__back-text, .nx-visor__divider, .nx-visor__meta { display: none; }
+  .nx-floating { position: fixed; top: auto; bottom: 0; left: 0; right: 0; height: auto; flex-direction: column-reverse; padding: 0; }
+  .nx-toolbar { width: 100%; justify-content: safe center; border-radius: 0; overflow-x: auto; }
+  .nx-toolbar > * { flex: none; }
+  .nx-page-controls { bottom: 80px; }
+  .nx-visor__stage { padding: 12px 12px 160px; }
+}

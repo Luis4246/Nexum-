@@ -1,0 +1,136 @@
+/* Disposición de pantallas (página 02 de Figma). */
+
+/* ---------- G-02 a G-04 · Pantallas de acceso: panel de marca + contenido ---------- */
+.nx-auth { display: grid; grid-template-columns: 560px 1fr; min-height: 100vh; background: var(--nx-surface-base); }
+.nx-auth__brand { position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between;
+  padding: 64px; background: var(--nx-surface-inverse); color: var(--nx-text-on-inverse); }
+.nx-auth__mark { position: absolute; right: -76px; bottom: -60px; opacity: .08; pointer-events: none; }
+.nx-auth__message { position: absolute; left: 64px; top: min(760px, calc(100% - 200px)); display: flex; flex-direction: column; gap: 12px; width: 440px; }
+.nx-auth__message p { color: var(--nx-surface-accent); max-width: 400px; }
+.nx-auth__main { display: flex; align-items: center; justify-content: center; padding: 48px 24px; }
+.nx-auth__form { display: flex; flex-direction: column; gap: 20px; width: 100%; max-width: 400px; }
+.nx-auth__heading { display: flex; flex-direction: column; gap: 8px; }
+.nx-auth__row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.nx-auth__rule { height: 1px; background: var(--nx-border-subtle); }
+.nx-auth__icon { display: inline-flex; align-items: center; justify-content: center; width: 56px; height: 56px; border-radius: 50%; }
+.nx-auth__icon--warning { background: var(--nx-status-warning-bg); color: var(--nx-status-warning); }
+.nx-auth__icon--accent { background: var(--nx-surface-accent); color: var(--nx-brand-navy); }
+.nx-auth__icon--error { background: var(--nx-status-error-bg); color: var(--nx-status-error); }
+.nx-auth .nx-tag { align-self: flex-start; }
+.nx-auth__back { align-self: flex-start; margin-left: -12px; }
+
+/* ---------- G-01 · Landing ---------- */
+.nx-landing__nav { display: flex; align-items: center; justify-content: space-between; height: 72px; padding: 0 120px; }
+.nx-landing__links { display: flex; gap: 32px; }
+.nx-landing__links a { font: 500 13px/16px var(--nx-font-text); color: var(--nx-text-secondary); text-decoration: none; }
+.nx-landing__links a:hover { color: var(--nx-text-primary); }
+.nx-landing__actions { display: flex; align-items: center; gap: 8px; }
+.nx-hero { display: flex; align-items: center; gap: 64px; padding: 72px 120px 96px; }
+.nx-hero__text { display: flex; flex-direction: column; gap: 24px; width: 520px; flex: none; }
+.nx-hero__text .nx-eyebrow { letter-spacing: 0.08em; color: var(--nx-text-link); }
+.nx-hero__text .nx-body { max-width: 500px; }
+.nx-hero__cta { display: flex; gap: 12px; }
+.nx-hero__note { display: flex; align-items: center; gap: 8px; }
+.nx-hero__shot { position: relative; flex: 1; height: 480px; border-radius: var(--nx-radius-lg); overflow: hidden;
+  background: var(--nx-surface-sunken); box-shadow: inset 0 0 0 1px var(--nx-border-subtle), var(--nx-elevation-overlay); }
+.nx-hero__toolbar { position: absolute; top: 24px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 2px;
+  padding: 4px; border-radius: var(--nx-radius-md); background: var(--nx-surface-raised); box-shadow: var(--nx-elevation-overlay); color: var(--nx-brand-navy); }
+.nx-hero__toolbar span { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 6px; }
+.nx-hero__toolbar span.activo { background: color-mix(in srgb, var(--nx-brand-lavender) 45%, transparent); color: var(--nx-brand-violet); }
+.nx-hero__page { position: absolute; top: 84px; left: 50%; transform: translateX(-50%); width: 422px; height: 420px; padding: 40px 44px;
+  background: var(--nx-surface-raised); display: flex; flex-direction: column; gap: 9px; overflow: hidden; }
+.nx-hero__page small { font: 500 7px/10px var(--nx-font-text); letter-spacing: .08em; color: var(--nx-text-secondary); }
+.nx-hero__page strong { font: 600 16px/21px var(--nx-font-title); }
+.nx-hero__page em { font-style: normal; font: 400 7.5px/11px var(--nx-font-text); color: var(--nx-text-secondary); }
+.nx-hero__page b { font: 600 9.5px/14px var(--nx-font-title); }
+.nx-hero__page p { font: 400 7.8px/13px var(--nx-font-text); }
+.nx-hero__page mark { background: color-mix(in srgb, var(--nx-annotation-yellow) 45%, transparent); color: inherit; }
+.nx-hero__page hr { width: 100%; margin: 0; border: 0; border-top: 1px solid var(--nx-border-subtle); }
+.nx-section { display: flex; flex-direction: column; gap: 40px; padding: 96px 120px; }
+.nx-section--raised { background: var(--nx-surface-raised); }
+.nx-section__head { display: flex; flex-direction: column; gap: 8px; }
+.nx-features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; }
+.nx-feature { display: flex; flex-direction: column; gap: 12px; }
+.nx-feature p { max-width: 340px; }
+.nx-feature__icon { display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: var(--nx-radius-md);
+  background: var(--nx-surface-accent); color: var(--nx-brand-navy); }
+.nx-chips { display: flex; flex-wrap: wrap; gap: 12px; }
+.nx-chip { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: var(--nx-radius-full);
+  background: var(--nx-surface-raised); box-shadow: inset 0 0 0 1px var(--nx-border-subtle); font: 500 13px/16px var(--nx-font-text); color: var(--nx-brand-navy); }
+.nx-band { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 64px 120px; background: var(--nx-surface-inverse); }
+.nx-band h2 { color: var(--nx-text-on-inverse); }
+.nx-band p { color: var(--nx-surface-accent); }
+.nx-band__actions { display: flex; gap: 12px; }
+.nx-band .nx-btn--light { background: var(--nx-surface-raised); color: var(--nx-text-primary); }
+.nx-band .nx-btn--light:hover { background: var(--nx-surface-base); }
+.nx-foot { display: flex; justify-content: space-between; padding: 24px 120px; background: var(--nx-surface-inverse);
+  box-shadow: inset 0 1px 0 var(--nx-text-secondary); color: var(--nx-surface-accent); font: 400 12px/16px var(--nx-font-text); }
+
+/* ---------- Pantallas internas (administrador y cliente) ---------- */
+.nx-page { width: 100%; max-width: calc(var(--nx-content-width) + 2 * 120px); margin: 0 auto; padding: 48px 120px 96px; display: flex; flex-direction: column; gap: 32px; }
+.nx-page__top { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; }
+.nx-page__title { display: flex; flex-direction: column; gap: 6px; }
+.nx-page__tools { display: flex; align-items: center; gap: 12px; }
+.nx-page__tools .nx-field { width: 320px; }
+.nx-grid-cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; }
+
+@media (max-width: 1100px) {
+  .nx-hero { flex-direction: column; align-items: stretch; padding: 48px 40px 64px; }
+  .nx-hero__text { width: auto; }
+  .nx-landing__nav, .nx-section, .nx-band, .nx-foot { padding-left: 40px; padding-right: 40px; }
+  .nx-features { grid-template-columns: 1fr; }
+  .nx-page { padding: 32px 40px 64px; }
+  .nx-grid-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 900px) {
+  .nx-auth { grid-template-columns: 1fr; }
+  .nx-auth__brand { padding: 24px; min-height: 0; }
+  .nx-auth__message, .nx-auth__mark { display: none; }
+  .nx-auth__main { align-items: flex-start; }
+}
+@media (max-width: 640px) {
+  .nx-landing__nav, .nx-section, .nx-band, .nx-foot { padding-left: 20px; padding-right: 20px; }
+  .nx-landing__links { display: none; }
+  .nx-hero { padding: 32px 20px 48px; }
+  .nx-hero__text .nx-display { font: 700 32px/40px var(--nx-font-title); letter-spacing: -0.5px; }
+  .nx-hero__shot { height: 300px; }
+  .nx-hero__cta, .nx-band, .nx-band__actions { flex-direction: column; align-items: stretch; }
+  .nx-page { padding: 24px 20px 48px; }
+  .nx-page__top { flex-direction: column; align-items: stretch; }
+  .nx-page__tools .nx-field { width: 100%; }
+  .nx-grid-cards { grid-template-columns: 1fr; }
+}
+
+/* ---------- A-05 · Tarjetas del inicio del administrador ---------- */
+.nx-home-actions { display: flex; gap: 24px; align-items: stretch; }
+.nx-card { display: flex; flex-direction: column; gap: 16px; padding: 24px; border-radius: var(--nx-radius-lg);
+  background: var(--nx-surface-raised); box-shadow: inset 0 0 0 1px var(--nx-border-subtle); }
+.nx-card--grow { flex: 1; min-width: 0; }
+.nx-card--side { width: 384px; flex: none; }
+.nx-stack { display: flex; flex-direction: column; gap: 16px; }
+.nx-kv { display: flex; flex-direction: column; gap: 2px; }
+.nx-two-cols { display: grid; grid-template-columns: 384px 1fr; gap: 24px; align-items: start; }
+.nx-detail-head { display: flex; align-items: center; gap: 20px; }
+.nx-detail-head__text { flex: 1; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.nx-detail-head__name { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.nx-assigned { display: flex; align-items: center; gap: 16px; padding: 12px 0; box-shadow: inset 0 -1px 0 var(--nx-border-subtle); }
+.nx-assigned-list { display: flex; flex-direction: column; gap: 16px; }
+.nx-rule { height: 1px; background: var(--nx-border-subtle); }
+.nx-search-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.nx-search-row__search { width: 360px; max-width: 100%; }
+.nx-search-row__sort { width: 220px; max-width: 100%; }
+.nx-filter-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.nx-filter-row .nx-field { width: 360px; }
+.nx-event { display: grid; grid-template-columns: 200px 160px 1fr; gap: 16px; padding: 12px 20px; box-shadow: inset 0 -1px 0 var(--nx-border-subtle); }
+@media (max-width: 1100px) {
+  .nx-home-actions { flex-direction: column; }
+  .nx-card--side { width: auto; }
+  .nx-two-cols { grid-template-columns: 1fr; }
+  .nx-table { overflow-x: auto; }
+  .nx-table__row { min-width: 860px; }
+}
+@media (max-width: 640px) {
+  .nx-filter-row .nx-field, .nx-search-row__search, .nx-search-row__sort { width: 100%; }
+  .nx-detail-head { flex-wrap: wrap; }
+  .nx-event { grid-template-columns: 1fr; gap: 4px; }
+}

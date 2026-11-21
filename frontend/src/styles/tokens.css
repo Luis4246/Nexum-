@@ -1,0 +1,80 @@
+/* Tokens de NEXUM: copia exacta de la colección «NEXUM Tokens» de Figma (página 03 · C00).
+   Ningún color, medida o tipografía debe escribirse fuera de este archivo. */
+:root {
+  /* Marca */
+  --nx-brand-navy: #111C30;
+  --nx-brand-violet: #716BB5;
+  --nx-brand-lavender: #C6BDF0;
+  --nx-brand-warm-white: #F8F7F4;
+
+  /* Superficies */
+  --nx-surface-base: #F8F7F4;
+  --nx-surface-raised: #FFFFFF;
+  --nx-surface-sunken: #EAEAE8;
+  --nx-surface-inverse: #111C30;
+  --nx-surface-accent: #C6BDF0;
+
+  /* Texto */
+  --nx-text-primary: #111C30;
+  --nx-text-secondary: #525967;
+  --nx-text-disabled: #777C86;
+  --nx-text-link: #5E5B9A;
+  --nx-text-on-inverse: #FFFFFF;
+
+  /* Bordes */
+  --nx-border-strong: #838993;
+  --nx-border-subtle: #DCDDDC;
+  --nx-border-focus: #716BB5;
+
+  /* Acciones */
+  --nx-action-primary: #111C30;
+  --nx-action-primary-hover: #2A3550;
+  --nx-action-secondary: #716BB5;
+
+  /* Estados */
+  --nx-status-success: #2F6B4F;
+  --nx-status-success-bg: #E0E6E0;
+  --nx-status-warning: #8A5A00;
+  --nx-status-warning-bg: #EBE4D7;
+  --nx-status-error: #B3261E;
+  --nx-status-error-bg: #F0DEDA;
+  --nx-status-error-hover: #921F18;
+
+  /* Anotación (excepción funcional documentada en Figma) */
+  --nx-annotation-yellow: #F7D046;
+  --nx-annotation-green: #5BC98C;
+  --nx-annotation-blue: #4D8FF7;
+  --nx-annotation-pink: #EC6FA6;
+  --nx-annotation-ink: #111C30;
+
+  /* Espaciado */
+  --nx-space-4: 4px;
+  --nx-space-8: 8px;
+  --nx-space-12: 12px;
+  --nx-space-16: 16px;
+  --nx-space-20: 20px;
+  --nx-space-24: 24px;
+  --nx-space-32: 32px;
+  --nx-space-40: 40px;
+  --nx-space-48: 48px;
+  --nx-space-64: 64px;
+
+  /* Radios */
+  --nx-radius-sm: 8px;
+  --nx-radius-md: 12px;
+  --nx-radius-lg: 16px;
+  --nx-radius-full: 999px;
+
+  /* Sombra única para elementos flotantes (Elevation/Overlay) */
+  --nx-elevation-overlay: 0 8px 24px rgba(17, 28, 48, 0.08);
+  /* Fondo de overlays: surface/inverse al 40 % */
+  --nx-scrim: rgba(17, 28, 48, 0.4);
+
+  /* Tipografía */
+  --nx-font-title: "Plus Jakarta Sans", system-ui, sans-serif;
+  --nx-font-text: "Inter", system-ui, sans-serif;
+
+  /* Medidas de pantalla */
+  --nx-nav-height: 64px;
+  --nx-content-width: 1200px;
+}
