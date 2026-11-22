@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { TextLayer } from 'pdfjs-dist'
+import { TextLayer } from 'pdfjs-dist/legacy/build/pdf.mjs'
 
 // Grosor de cada herramienta de trazo, relativo al ancho de la página (S, M, L).
 export const GROSORES = { dibujo: [0.008, 0.012, 0.018], lapiz: [0.0015, 0.0025, 0.004] }
