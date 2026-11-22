@@ -7,11 +7,31 @@ const TAMANO_TEXTO = 13 / 680  // 13 px con la página a 680 px (100 %), como en
 
 // Una página del PDF: lienzo de pdf.js, capa de texto seleccionable, capa de anotaciones y marca de agua.
 // Todas las coordenadas de las anotaciones son relativas a la página (0 a 1), así se ven igual con cualquier zoom.
-export default function Pagina({ pdf, numero, ancho, anotaciones, herramienta, color, grosor, editable, codigo, onCrear, onBorrar, onTexto, informar }) {
+export default function Pagina({ pdf, numero, ancho, anotaciones, herramienta, color, grosor, editable, codigo, onCrear, onBorrar, onTexto, informar, irDestino }) {
   const hoja = useRef(null), lienzo = useRef(null), capaTexto = useRef(null)
   const [alto, setAlto] = useState(ancho * 1.414)
   const [trazo, setTrazo] = useState(null)
   const [entrada, setEntrada] = useState(null)
+  const [enlaces, setEnlaces] = useState([])
+
+  useEffect(() => {
+    let activo = true
+    setEnlaces([])
+    async function cargar() {
+      const pagina = await pdf.getPage(numero)
+      const vista = pagina.getViewport({ scale: 1 })
+      const elementos = await pagina.getAnnotations({ intent: 'display' })
+      const internos = elementos.filter(a => a.subtype === 'Link' && a.dest != null && a.rect?.length === 4)
+      if (activo) setEnlaces(internos.map(a => {
+        const [x1, y1, x2, y2] = vista.convertToViewportRectangle(a.rect)
+        return { id: a.id, dest: a.dest, titulo: a.contentsObj?.str || a.titleObj?.str,
+          style: { left: Math.min(x1, x2) / vista.width * 100 + '%', top: Math.min(y1, y2) / vista.height * 100 + '%',
+            width: Math.abs(x2-x1) / vista.width * 100 + '%', height: Math.abs(y2-y1) / vista.height * 100 + '%' } }
+      }))
+    }
+    cargar().catch(() => { if (activo) setEnlaces([]) })
+    return () => { activo = false }
+  }, [pdf, numero])
 
   useEffect(() => {
     let cancelado = false, render, texto
@@ -95,6 +115,9 @@ export default function Pagina({ pdf, numero, ancho, anotaciones, herramienta, c
   return <div ref={hoja} className={clase} style={{ width: W, height: H }} onPointerUp={seleccion} onKeyUp={seleccion}>
     <canvas ref={lienzo} />
     <div ref={capaTexto} className="textLayer" />
+    {herramienta === 'seleccion' && enlaces.map((enlace, i) =>
+      <button key={enlace.id} className="nx-enlace-pdf" type="button" style={enlace.style}
+        aria-label={enlace.titulo || `Seguir enlace interno ${i + 1}`} onClick={() => irDestino(enlace.dest)} />)}
     <svg className="nx-capa" width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden="true">
       {anotaciones.map(a => {
         const clave = a.id ?? a.temp

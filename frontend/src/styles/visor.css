@@ -66,3 +66,18 @@
   .nx-page-controls { bottom: 80px; }
   .nx-visor__stage { padding: 12px 12px 160px; }
 }
+.nx-visor__lectura.con-temario { display: grid; grid-template-columns: minmax(200px, 260px) minmax(0, 1fr); }
+.nx-temario { position: sticky; top: 56px; align-self: start; height: calc(100dvh - 56px); overflow: auto; padding: 16px; background: var(--nx-surface-raised); border-right: 1px solid var(--nx-border-subtle); }
+.nx-temario h2 { margin: 0 0 12px; font-size: 18px; }
+.nx-temario form, .nx-temario label { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.nx-temario input { width: 4em; padding: 4px; }
+.nx-temario ul { list-style: none; padding: 0; }
+.nx-temario ul ul { padding-inline-start: 12px; border-inline-start: 1px solid var(--nx-border-subtle); }
+.nx-temario li button { width: 100%; padding: 6px 4px; background: transparent; color: inherit; border: 0; font: inherit; text-align: start; overflow-wrap: anywhere; cursor: pointer; }
+.nx-temario li button:hover { text-decoration: underline; }
+.nx-enlace-pdf { position: absolute; z-index: 5; padding: 0; border: 0; background: transparent; cursor: pointer; }
+.nx-enlace-pdf:is(:hover, :focus-visible) { background: rgb(77 143 247 / 18%); }
+@media (max-width: 1023px) {
+  .nx-visor__lectura.con-temario { display: block; }
+  .nx-temario { position: fixed; left: 0; top: 56px; bottom: 0; width: min(300px, 90vw); z-index: 29; box-shadow: 2px 4px 12px #0002; }
+}

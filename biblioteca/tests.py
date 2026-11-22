@@ -174,7 +174,11 @@ class FlujoLocal(APITestCase):
         anteriores = self.lector.get("/api/"+self.url+"?version=1").data
         self.assertEqual([m["id"] for m in anteriores], [marca["id"]])
         # El cliente puede abrir la versión anterior, pero sus anotaciones son de solo consulta.
-        self.assertEqual(self.lector.get(f"/api/biblioteca/{doc['id']}/contenido/?version=1").status_code, 200)
+        contenido = self.lector.get(f"/api/biblioteca/{doc['id']}/contenido/?version=1")
+        try:
+            self.assertEqual(contenido.status_code, 200)
+        finally:
+            contenido.close()
         self.assertEqual(self.lector.get(f"/api/biblioteca/{doc['id']}/contenido/?version=9").status_code, 404)
         url = "/api/" + self.url + str(marca["id"]) + "/"
         self.assertEqual(self.lector.patch(url, {"color":"#123456"}, format="json").status_code, 400)

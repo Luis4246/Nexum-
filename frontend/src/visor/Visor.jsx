@@ -13,6 +13,7 @@ import { navigate } from '../router'
 import { anotaciones as leerAnotaciones, contenido, guardarAnotaciones, miBiblioteca } from '../services/biblioteca'
 import { fecha, plural } from '../utils/formato'
 import Pagina from './Pagina'
+import Temario from './Temario'
 
 GlobalWorkerOptions.workerSrc = worker
 
@@ -46,6 +47,30 @@ export default function Visor({ id, version: versionPedida, usuario }) {
   const [recarga, setRecarga] = useState(0)
   const [base, setBase] = useState(() => Math.min(680, window.innerWidth - 24))
   const temporal = useRef(0)
+  const [temarioAbierto, setTemarioAbierto] = useState(() => window.innerWidth >= 1024)
+  const navegacion = useRef(0)
+  useEffect(() => () => { navegacion.current++ }, [pdf])
+
+  function irPagina(numero) {
+    navegacion.current++
+    if (!Number.isInteger(numero) || numero < 1 || numero > pdf.numPages) return
+    setPagina(numero)
+    if (window.innerWidth < 1024) setTemarioAbierto(false)
+    window.scrollTo(0, 0)
+  }
+
+  async function irDestino(destino) {
+    const solicitud = ++navegacion.current
+    try {
+      const datos = typeof destino === 'string' ? await pdf.getDestination(destino) : destino
+      if (!Array.isArray(datos)) throw new Error()
+      const indice = Number.isInteger(datos[0]) ? datos[0] : await pdf.getPageIndex(datos[0])
+      if (!Number.isInteger(indice) || indice < 0 || indice >= pdf.numPages) throw new Error()
+      if (solicitud === navegacion.current) irPagina(indice + 1)
+    } catch {
+      if (solicitud === navegacion.current) setError('No se pudo localizar el destino de este enlace en el PDF.')
+    }
+  }
 
   const vigente = doc?.version
   const numeroVersion = versionPedida || vigente
@@ -181,6 +206,8 @@ export default function Visor({ id, version: versionPedida, usuario }) {
       <div className="nx-visor__left">
         <Button variant="text" size="sm" icon="chevron-left" onClick={volver} aria-label="Volver a mis documentos"><span className="nx-visor__back-text">Mis documentos</span></Button>
         <span className="nx-visor__divider" />
+        {pdf && <Button variant="secondary" size="sm" aria-expanded={temarioAbierto}
+          onClick={() => setTemarioAbierto(abierto => !abierto)}>Temario</Button>}
         <div className="nx-visor__title"><strong>{doc?.titulo || 'Abriendo documento…'}</strong>
           {doc && <span className="nx-caption nx-muted nx-visor__meta">{plural(pdf?.numPages || doc.paginas, 'página', 'páginas')}{doc.asignado_en ? ' · Asignado el ' + fecha(doc.asignado_en) : ''}</span>}</div>
         {doc && doc.versiones.length > 1 && <Menu label="Versiones" items={doc.versiones.map(v => ({ label: `Versión ${v.numero}${v.numero === vigente ? ' (vigente)' : ''} · ${fecha(v.creado_en)}`,
@@ -192,6 +219,8 @@ export default function Visor({ id, version: versionPedida, usuario }) {
         <Button size="sm" icon="save" loading={estado === 'guardando'} disabled={!sucio} onClick={guardar}>{estado === 'guardando' ? 'Guardando…' : 'Guardar'}</Button>
       </div>}
     </header>
+    <div className={pdf && temarioAbierto ? 'nx-visor__lectura con-temario' : 'nx-visor__lectura'}>
+    {pdf && temarioAbierto && <Temario pdf={pdf} pagina={pagina} ir={irDestino} irPagina={irPagina} />}
     <div className="nx-visor__stage">
       {doc && <div className="nx-floating">
         {editable ? <div className="nx-toolbar" role="toolbar" aria-label="Herramientas de anotación">
@@ -217,8 +246,9 @@ export default function Visor({ id, version: versionPedida, usuario }) {
       {pdf ? <div className="nx-page-wrap">
         <Pagina pdf={pdf} numero={pagina} ancho={Math.round(base * zoom)} anotaciones={visibles.filter(a => a.pagina === pagina)}
           herramienta={editable ? herramienta : 'seleccion'} color={color} grosor={grosor} editable={editable} codigo={usuario}
-          onCrear={crear} onBorrar={borrar} onTexto={setConTexto} informar={informar} />
+          onCrear={crear} onBorrar={borrar} onTexto={setConTexto} informar={informar} irDestino={irDestino} />
       </div> : !error && <Spinner label="Abriendo documento…" />}
+    </div>
     </div>
     {pdf && <nav className="nx-page-controls" aria-label="Páginas y zoom">
       <IconButton icon="chevron-left" size="sm" label="Página anterior" tooltip={false} disabled={pagina === 1} onClick={() => setPagina(p => p - 1)} />
