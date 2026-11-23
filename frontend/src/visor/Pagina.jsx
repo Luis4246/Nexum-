@@ -7,9 +7,9 @@ const TAMANO_TEXTO = 13 / 680  // 13 px con la página a 680 px (100 %), como en
 
 // Una página del PDF: lienzo de pdf.js, capa de texto seleccionable, capa de anotaciones y marca de agua.
 // Todas las coordenadas de las anotaciones son relativas a la página (0 a 1), así se ven igual con cualquier zoom.
-export default function Pagina({ pdf, numero, ancho, anotaciones, herramienta, color, grosor, editable, codigo, onCrear, onBorrar, onTexto, informar, irDestino }) {
+export default function Pagina({ pdf, numero, ancho, altoInicial, anotaciones, herramienta, color, grosor, editable, codigo, onCrear, onBorrar, onTexto, onMedida, informar, irDestino }) {
   const hoja = useRef(null), lienzo = useRef(null), capaTexto = useRef(null)
-  const [alto, setAlto] = useState(ancho * 1.414)
+  const [alto, setAlto] = useState(altoInicial ?? ancho * 1.414)
   const [trazo, setTrazo] = useState(null)
   const [entrada, setEntrada] = useState(null)
   const [enlaces, setEnlaces] = useState([])
@@ -41,6 +41,7 @@ export default function Pagina({ pdf, numero, ancho, anotaciones, herramienta, c
       const base = pagina.getViewport({ scale: 1 })
       const viewport = pagina.getViewport({ scale: ancho / base.width })
       setAlto(viewport.height)
+      onMedida?.(viewport.height / viewport.width)
       hoja.current.style.setProperty('--total-scale-factor', viewport.scale * pagina.userUnit)
       const densidad = Math.min(window.devicePixelRatio || 1, 2)
       const cv = lienzo.current
@@ -55,7 +56,7 @@ export default function Pagina({ pdf, numero, ancho, anotaciones, herramienta, c
     }
     dibujar().catch(e => { if (!cancelado && e?.name !== 'RenderingCancelledException') informar(e.message) })
     return () => { cancelado = true; render?.cancel(); texto?.cancel() }
-  }, [pdf, numero, ancho, informar, onTexto])
+  }, [pdf, numero, ancho, informar, onTexto, onMedida])
 
   const relativo = e => {
     const r = hoja.current.getBoundingClientRect()

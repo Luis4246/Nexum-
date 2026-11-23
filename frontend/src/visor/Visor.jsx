@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist/legacy/build/pdf.mjs'
 import worker from 'pdfjs-dist/legacy/build/pdf.worker.min.mjs?url'
 import 'pdfjs-dist/web/pdf_viewer.css'
@@ -41,7 +41,9 @@ export default function Visor({ id, version: versionPedida, usuario }) {
   const [grosor, setGrosor] = useState(1)
   const [pagina, setPagina] = useState(1)
   const [zoom, setZoom] = useState(1)
-  const [conTexto, setConTexto] = useState(true)
+  const [rango, setRango] = useState([1, 1])               // primera y última página visibles en pantalla
+  const [proporciones, setProporciones] = useState({})     // alto/ancho medido de cada página ya dibujada
+  const [textos, setTextos] = useState({})                 // si cada página dibujada tiene texto seleccionable
   const [salir, setSalir] = useState(null)
   const [aviso, setAviso] = useState('')
   const [recarga, setRecarga] = useState(0)
@@ -51,12 +53,36 @@ export default function Visor({ id, version: versionPedida, usuario }) {
   const navegacion = useRef(0)
   useEffect(() => () => { navegacion.current++ }, [pdf])
 
+  // Lectura continua: cada página tiene una ranura en la columna; solo se dibujan las cercanas a la pantalla.
+  const ranuras = useRef(new Map())
+  const avisosPorPagina = useRef(new Map())
+  const fraccion = useRef(0)
+  // Funciones estables por página, para que Pagina no vuelva a dibujarse cuando cambia la página actual.
+  function avisosDe(n) {
+    if (!avisosPorPagina.current.has(n)) avisosPorPagina.current.set(n, {
+      texto: v => setTextos(t => t[n] === v ? t : { ...t, [n]: v }),
+      medida: p => setProporciones(m => m[n] === p ? m : { ...m, [n]: p }),
+    })
+    return avisosPorPagina.current.get(n)
+  }
+  // Altura de lectura: el borde superior queda bajo la cabecera y la barra de herramientas (scroll-margin-top del CSS).
+  const lineaLectura = () => {
+    const margen = parseFloat(getComputedStyle(ranuras.current.get(1)).scrollMarginTop) || 0
+    return margen + (window.innerHeight - margen) * 0.25
+  }
+
+  function desplazar(numero, suave = false) {
+    const ranura = ranuras.current.get(numero)
+    if (!ranura) return
+    setPagina(numero)
+    ranura.scrollIntoView({ block: 'start', behavior: suave ? 'smooth' : 'auto' })
+  }
+
   function irPagina(numero) {
     navegacion.current++
     if (!Number.isInteger(numero) || numero < 1 || numero > pdf.numPages) return
-    setPagina(numero)
+    desplazar(numero)
     if (window.innerWidth < 1024) setTemarioAbierto(false)
-    window.scrollTo(0, 0)
   }
 
   async function irDestino(destino) {
@@ -82,6 +108,7 @@ export default function Visor({ id, version: versionPedida, usuario }) {
   useEffect(() => {
     let vigenteCarga = true, tarea
     setPdf(null); setError(''); setNuevas([]); setBorradas([]); setHistorial({ atras: [], adelante: [] }); setEstado('guardado'); setPagina(1)
+    setRango([1, 1]); setProporciones({}); setTextos({})
     async function cargar() {
       const lista = await miBiblioteca()
       const meta = lista.find(d => d.id === id)
@@ -119,6 +146,63 @@ export default function Visor({ id, version: versionPedida, usuario }) {
     window.addEventListener('resize', medir)
     return () => window.removeEventListener('resize', medir)
   }, [])
+
+  const ancho = Math.round(base * zoom)
+  const altoDe = n => ancho * (proporciones[n] ?? proporciones[1] ?? 1.414)
+
+  // En segundo plano se leen las medidas de todas las páginas (sin dibujarlas), para que los marcos vacíos
+  // tengan su tamaño real desde el principio y la vista no salte en PDF con páginas de distinto tamaño.
+  useEffect(() => {
+    if (!pdf) return
+    let activo = true
+    async function medirTodas() {
+      const medidas = {}
+      for (let n = 1; n <= pdf.numPages && activo; n++) {
+        const vista = (await pdf.getPage(n)).getViewport({ scale: 1 })
+        medidas[n] = vista.height / vista.width
+      }
+      if (activo) setProporciones(m => ({ ...medidas, ...m }))
+    }
+    medirTodas().catch(() => { /* si falla, se siguen usando las medidas de las páginas ya dibujadas */ })
+    return () => { activo = false }
+  }, [pdf])
+
+  // Al desplazarse se calcula qué páginas están en pantalla y cuál es la actual (la que cruza la altura de lectura).
+  useEffect(() => {
+    if (!pdf) return
+    let cuadro = 0
+    const medir = () => {
+      cuadro = 0
+      const total = pdf.numPages, caja = n => ranuras.current.get(n)?.getBoundingClientRect()
+      if (!caja(1)) return
+      // Búsqueda binaria de la primera página cuyo borde inferior queda bajo la altura y.
+      const primeraBajo = y => { let a = 1, b = total; while (a < b) { const m = (a + b) >> 1; if (caja(m).bottom < y) a = m + 1; else b = m } return a }
+      const linea = lineaLectura()
+      const desde = primeraBajo(0), hasta = primeraBajo(window.innerHeight)
+      const alFinal = window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2
+      const actual = alFinal ? hasta : primeraBajo(linea)
+      const r = caja(actual)
+      fraccion.current = (linea - r.top) / r.height
+      setPagina(actual)
+      setRango(v => v[0] === desde && v[1] === hasta ? v : [desde, hasta])
+    }
+    const programar = () => { if (!cuadro) cuadro = requestAnimationFrame(medir) }
+    programar()
+    window.addEventListener('scroll', programar, { passive: true })
+    window.addEventListener('resize', programar)
+    return () => { cancelAnimationFrame(cuadro); window.removeEventListener('scroll', programar); window.removeEventListener('resize', programar) }
+  }, [pdf, ancho])
+
+  // Al cambiar el zoom (o el ancho de la pantalla) se mantiene a la vista el mismo punto de la página actual.
+  const anchoPrevio = useRef(ancho)
+  useLayoutEffect(() => {
+    if (anchoPrevio.current === ancho) return
+    anchoPrevio.current = ancho
+    const ranura = ranuras.current.get(pagina)
+    if (!ranura) return
+    const r = ranura.getBoundingClientRect()
+    window.scrollBy(0, r.top + Math.min(1, Math.max(0, fraccion.current)) * r.height - lineaLectura())
+  }, [ancho])
 
   // Aviso del navegador si se intenta cerrar la pestaña con cambios sin guardar.
   useEffect(() => {
@@ -180,8 +264,8 @@ export default function Visor({ id, version: versionPedida, usuario }) {
       if (mod && e.key.toLowerCase() === 'y') { e.preventDefault(); if (editable) rehacer(); return }
       if (mod || e.altKey) return
       if (editable && ATAJOS[e.key.toLowerCase()]) elegir(ATAJOS[e.key.toLowerCase()])
-      if (pdf && e.key === 'PageDown') setPagina(p => Math.min(pdf.numPages, p + 1))
-      if (pdf && e.key === 'PageUp') setPagina(p => Math.max(1, p - 1))
+      if (pdf && e.key === 'PageDown') { e.preventDefault(); desplazar(Math.min(pdf.numPages, pagina + 1), true) }
+      if (pdf && e.key === 'PageUp') { e.preventDefault(); desplazar(Math.max(1, pagina - 1), true) }
     }
     window.addEventListener('keydown', tecla)
     return () => window.removeEventListener('keydown', tecla)
@@ -200,6 +284,7 @@ export default function Visor({ id, version: versionPedida, usuario }) {
   const mostrado = estado === 'pendiente' && !sucio ? 'guardado' : estado
   const guardado = ESTADO_GUARDADO[mostrado]
   const opciones = editable && ['dibujo', 'lapiz', 'resaltado', 'subrayado', 'texto'].includes(herramienta)
+  const conTexto = textos[pagina] ?? true
   const sinTexto = !conTexto && ['resaltado', 'subrayado'].includes(herramienta)
   return <div className="nx-visor">
     <header className="nx-visor__head">
@@ -243,17 +328,20 @@ export default function Visor({ id, version: versionPedida, usuario }) {
         <Button variant="text" size="sm" onClick={() => { setAviso(''); abrirVersion(null) }}>abre la versión nueva</Button>.</InlineAlert></div>}
       {sinTexto && <div className="nx-visor__alert"><InlineAlert type="info">Esta página no tiene texto seleccionable (por ejemplo, un PDF escaneado). Usa el dibujo libre, el lápiz o el texto.</InlineAlert></div>}
       {error && <div className="nx-visor__alert"><InlineAlert type="error">{error}</InlineAlert></div>}
-      {pdf ? <div className="nx-page-wrap">
-        <Pagina pdf={pdf} numero={pagina} ancho={Math.round(base * zoom)} anotaciones={visibles.filter(a => a.pagina === pagina)}
-          herramienta={editable ? herramienta : 'seleccion'} color={color} grosor={grosor} editable={editable} codigo={usuario}
-          onCrear={crear} onBorrar={borrar} onTexto={setConTexto} informar={informar} irDestino={irDestino} />
+      {pdf ? <div className="nx-page-wrap nx-paginas">
+        {Array.from({ length: pdf.numPages }, (_, i) => i + 1).map(n => <div key={n} className="nx-ranura" data-pagina={n}
+          style={{ width: ancho, height: altoDe(n) }} ref={el => { if (el) ranuras.current.set(n, el); else ranuras.current.delete(n) }}>
+          {n >= rango[0] - 1 && n <= rango[1] + 1 && <Pagina pdf={pdf} numero={n} ancho={ancho} altoInicial={altoDe(n)} anotaciones={visibles.filter(a => a.pagina === n)}
+            herramienta={editable ? herramienta : 'seleccion'} color={color} grosor={grosor} editable={editable} codigo={usuario}
+            onCrear={crear} onBorrar={borrar} onTexto={avisosDe(n).texto} onMedida={avisosDe(n).medida} informar={informar} irDestino={irDestino} />}
+        </div>)}
       </div> : !error && <Spinner label="Abriendo documento…" />}
     </div>
     </div>
     {pdf && <nav className="nx-page-controls" aria-label="Páginas y zoom">
-      <IconButton icon="chevron-left" size="sm" label="Página anterior" tooltip={false} disabled={pagina === 1} onClick={() => setPagina(p => p - 1)} />
+      <IconButton icon="chevron-left" size="sm" label="Página anterior" tooltip={false} disabled={pagina === 1} onClick={() => desplazar(pagina - 1, true)} />
       <output aria-live="polite">{pagina} / {pdf.numPages}</output>
-      <IconButton icon="chevron-right" size="sm" label="Página siguiente" tooltip={false} disabled={pagina === pdf.numPages} onClick={() => setPagina(p => p + 1)} />
+      <IconButton icon="chevron-right" size="sm" label="Página siguiente" tooltip={false} disabled={pagina === pdf.numPages} onClick={() => desplazar(pagina + 1, true)} />
       <span className="nx-page-controls__divider" />
       <IconButton icon="zoom-out" size="sm" label="Alejar" tooltip={false} disabled={zoom === ZOOMS[0]} onClick={() => setZoom(z => ZOOMS[Math.max(0, ZOOMS.indexOf(z) - 1)])} />
       <output>{Math.round(zoom * 100)} %</output>
